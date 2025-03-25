@@ -1,0 +1,579 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hackathon Judge Assistant</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+          --primary: #a18cd1;
+          --primary-dark: #6f74dd;
+          --accent: #fbc2eb;
+          --accent-dark: #f48fb1;
+          --card-bg: rgba(20, 20, 35, 0.7);
+          --glass-bg: rgba(255, 255, 255, 0.05);
+          --border-color: rgba(255, 255, 255, 0.1);
+          --neon-shadow: 0 0 10px rgba(170, 100, 255, 0.3), 0 0 20px rgba(255, 120, 255, 0.15);
+        }
+    
+        body {
+          font-family: 'Orbitron', sans-serif;
+          background: linear-gradient(145deg, #201e30, #1a1333);
+          color: #fff;
+          margin: 0;
+          padding: 0;
+        }
+    
+        .container {
+          max-width: 1000px;
+          margin: 40px auto;
+          background: var(--card-bg);
+          border-radius: 16px;
+          padding: 40px;
+          box-shadow: var(--neon-shadow);
+          backdrop-filter: blur(12px);
+          transition: all 0.3s ease-in-out;
+        }
+    
+        h1 {
+          font-size: 2.5rem;
+          text-align: center;
+          margin-bottom: 30px;
+          color: var(--accent);
+          text-shadow: var(--neon-shadow);
+        }
+    
+        h2 {
+          font-size: 1.6rem;
+          margin-bottom: 10px;
+          color: var(--primary);
+        }
+    
+        textarea, select, input[type="range"] {
+          width: 100%;
+          padding: 12px;
+          margin-top: 8px;
+          margin-bottom: 20px;
+          border: 1px solid var(--border-color);
+          border-radius: 10px;
+          font-size: 14px;
+          font-family: 'Orbitron', sans-serif;
+          background: var(--glass-bg);
+          color: #fff;
+          box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.1);
+          appearance: none;
+        }
+    
+        select {
+          background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 140 140'%3E%3Cpolygon points='0,0 140,0 70,100' fill='%23ffffff'/%3E%3C/svg%3E");
+          background-repeat: no-repeat;
+          background-position: right 12px center;
+          background-size: 14px;
+        }
+    
+        textarea:focus, select:focus, input[type="range"]:focus {
+          outline: none;
+          box-shadow: 0 0 8px var(--accent);
+        }
+    
+        option {
+          background-color: #1a1333;
+          color: #fff;
+        }
+    
+        button {
+          background: linear-gradient(to right, var(--primary), var(--accent));
+          color: #fff;
+          padding: 12px 24px;
+          border: none;
+          border-radius: 10px;
+          font-size: 14px;
+          font-weight: bold;
+          cursor: pointer;
+          margin: 10px 0;
+          transition: all 0.3s ease;
+          box-shadow: var(--neon-shadow);
+        }
+    
+        button:hover {
+          transform: scale(1.03);
+          box-shadow: 0 0 12px var(--accent), 0 0 24px var(--primary-dark);
+        }
+    
+        .custom-file-wrapper {
+          position: relative;
+          display: inline-block;
+          margin: 10px 0 20px;
+        }
+    
+        .custom-file-wrapper input[type="file"] {
+          display: none;
+        }
+    
+        .custom-file-wrapper label {
+          display: inline-block;
+          padding: 10px 20px;
+          background: linear-gradient(to right, var(--primary-dark), var(--accent-dark));
+          color: #fff;
+          border-radius: 10px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          box-shadow: var(--neon-shadow);
+        }
+    
+        .custom-file-wrapper label:hover {
+          transform: scale(1.05);
+          box-shadow: 0 0 15px var(--accent);
+        }
+    
+        .file-name {
+          font-size: 0.9rem;
+          margin: 5px 0 15px;
+          font-style: italic;
+          color: #ccc;
+        }
+    
+        .feedback-display,
+        #azure-extracted-text,
+        #feedback-result,
+        #extracted-text,
+        #analysis-result,
+        #moderation-result,
+        #face-detection-result,
+        #chat-response {
+          background: var(--glass-bg);
+          padding: 15px;
+          border-radius: 10px;
+          border: 1px solid var(--border-color);
+          margin-top: 10px;
+          min-height: 40px;
+          color: #fff;
+          box-shadow: inset 0 0 6px rgba(255, 255, 255, 0.05);
+        }
+    
+        .section {
+          margin-bottom: 40px;
+        }
+      </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Hackathon Judge Assistant</h1>
+
+       
+
+        <!-- Set Hackathon Goals -->
+        <div id="set-goals">
+            <h2>Set Hackathon Goals</h2>
+            <textarea id="hackathon-goals" placeholder="Enter hackathon goals (e.g., innovation, impact, technical complexity)..."></textarea><br>
+            <button id="set-goals-button">Set Goals</button>
+        </div>
+
+        <!-- File Upload Section -->
+        <div class="file-upload">
+            <h2>Upload Project Submission</h2>
+            <label for="project-file">Upload PDF, JPEG, DOCX, or ZIP files:</label>
+            <input class="" type="file" id="project-file" accept=".pdf,.jpg,.jpeg,.png,.docx,.zip">
+            
+            <div class="file-name" id="file-name-display">No file chosen</div>
+            <button id="analyze-azure-button">Analyze by Azure</button>
+            <button id="analyze-gemini-button" style="display:none;">Analyze by Gemini</button>
+        </div>
+
+        <!-- Azure Analysis Results -->
+        <div id="azure-results">
+            <h3>Azure Analysis Results</h3>
+            <div id="azure-extracted-text"></div>
+        </div>
+
+        <!-- Feedback Display -->
+        <div class="feedback-display">
+            <h3>Gemini Feedback</h3>
+            <div id="feedback-result"></div>
+        </div>
+
+        <!-- Voice Customization -->
+        <div class="voice-customization">
+            <h2>Voice Customization</h2>
+            <div>
+                <label for="pitch">Pitch:</label>
+                <input type="range" id="pitch" min="-50%" max="50%" value="0%" step="10%">
+                <span id="pitch-value">0%</span>
+            </div>
+            <div>
+                <label for="rate">Rate:</label>
+                <input type="range" id="rate" min="0.5" max="2.0" value="1.0" step="0.1">
+                <span id="rate-value">1.0</span>
+            </div>
+            <button id="preview-voice-button">Preview Voice</button>
+        </div>
+
+        <!-- Voice Selection -->
+        <div id="voice-selection">
+            <label for="voice">Select voice:</label>
+            <select id="voice">
+                <option value="zu-ZA-ThandoNeural">Zulu - Thando</option>
+                <option value="af-ZA-AdriNeural">Afrikaans - Adri</option>
+                <option value="en-GB-RyanNeural">British English - Ryan</option>
+                <option value="en-US-JennyNeural">US English - Jenny</option>
+                <option value="en-AU-NatashaNeural">Australian English - Natasha</option>
+            </select>
+        </div>
+
+        <!-- OCR Section -->
+        <div id="ocr-section">
+            <h2>Extract Text from Image</h2>
+            <input type="file" id="image-upload" accept="image/*"><br>
+            <button id="extract-text-button">Extract Text</button>
+            <div id="extracted-text"></div>
+        </div>
+
+        <!-- Image Analysis Section -->
+        <div id="image-analysis-section">
+            <h2>Analyze Image</h2>
+            <input type="file" id="image-analysis-upload" accept="image/*"><br>
+            <button id="analyze-image-button">Analyze Image</button>
+            <div id="analysis-result"></div>
+        </div>
+
+        <!-- Image Moderation Section -->
+        <div id="image-moderation-section">
+            <h2>Moderate Image</h2>
+            <input type="file" id="image-moderation-upload" accept="image/*"><br>
+            <button id="moderate-image-button">Moderate Image</button>
+            <div id="moderation-result"></div>
+        </div>
+
+        <!-- Face Detection Section -->
+        <div id="face-detection-section">
+            <h2>Detect Faces</h2>
+            <input type="file" id="face-detection-upload" accept="image/*"><br>
+            <button id="detect-faces-button">Detect Faces</button>
+            <div id="face-detection-result"></div>
+        </div>
+
+        <!-- Chat Section -->
+        <div id="chat-section">
+            <h2>Chat with Gemini</h2>
+            <textarea id="chat-input" placeholder="Type your message..."></textarea><br>
+            <button id="send-chat-button">Send</button>
+            <div id="chat-response"></div>
+            <button id="synthesize-response-button" style="display:none;">Listen to Response</button>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // Dark Mode Toggle
+            function toggleDarkMode() {
+                $('body').toggleClass('dark-mode');
+                const isDarkMode = $('body').hasClass('dark-mode');
+                localStorage.setItem('darkMode', isDarkMode);
+                $('.dark-mode-toggle i').toggleClass('fa-moon fa-sun');
+            }
+
+            // Load Dark Mode Preference
+            if (localStorage.getItem('darkMode') === 'true') {
+                toggleDarkMode();
+            }
+
+            // Update pitch and rate values in real-time
+            $('#pitch').on('input', function() {
+                $('#pitch-value').text($(this).val() + "%");
+            });
+
+            $('#rate').on('input', function() {
+                $('#rate-value').text($(this).val());
+            });
+
+            // Set Hackathon Goals
+            $('#set-goals-button').click(function() {
+                const goals = $('#hackathon-goals').val().trim();
+                if (!goals) return;
+
+                $('#set-goals-button').html('Setting... <div class="loading"></div>');
+                $.ajax({
+                    type: 'POST',
+                    url: 'http://localhost:5000/set_hackathon_goals',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ goals: goals }),
+                    success: function(data) {
+                        $('#set-goals-button').html('Set Goals');
+                        alert('Hackathon goals set successfully!');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Failed to set goals:', error);
+                        $('#set-goals-button').html('Set Goals');
+                        alert('Failed to set goals. Please try again.');
+                    }
+                });
+            });
+
+            // Analyze with Azure
+            $('#analyze-azure-button').click(function() {
+                const fileInput = $('#project-file')[0];
+                if (!fileInput.files.length) {
+                    alert('Please select a file to upload.');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+
+                $('#analyze-azure-button').html('Analyzing... <div class="loading"></div>');
+                $.ajax({
+                    type: 'POST',
+                    url: 'http://localhost:5000/analyze_with_azure',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(data) {
+                        $('#analyze-azure-button').html('Analyze by Azure');
+                        $('#azure-extracted-text').html(`<strong>Extracted Text:</strong><br>${data.extracted_text}`);
+                        $('#analyze-gemini-button').show();
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Failed to analyze with Azure:', error);
+                        $('#analyze-azure-button').html('Analyze by Azure');
+                        alert('Failed to analyze with Azure. Please try again.');
+                    }
+                });
+            });
+
+            // Analyze with Gemini
+            $('#analyze-gemini-button').click(function() {
+                const extractedText = $('#azure-extracted-text').text().replace('Extracted Text:', '').trim();
+                if (!extractedText) {
+                    alert('No extracted text found. Please analyze with Azure first.');
+                    return;
+                }
+
+                $('#analyze-gemini-button').html('Analyzing... <div class="loading"></div>');
+                $.ajax({
+                    type: 'POST',
+                    url: 'http://localhost:5000/analyze_with_gemini',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ extracted_text: extractedText }),
+                    success: function(data) {
+                        $('#analyze-gemini-button').html('Analyze by Gemini');
+                        $('#feedback-result').html(`<strong>Feedback:</strong><br>${data.feedback}`);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Failed to analyze with Gemini:', error);
+                        $('#analyze-gemini-button').html('Analyze by Gemini');
+                        alert('Failed to analyze with Gemini. Please try again.');
+                    }
+                });
+            });
+
+            // Display selected file name
+            $('#project-file').change(function() {
+                const fileName = $(this).val().split('\\').pop();
+                $('#file-name-display').text(fileName || 'No file chosen');
+            });
+
+            // Voice Preview
+            $('#preview-voice-button').click(function() {
+                const text = "This is a preview of the current voice settings.";
+                const selectedVoiceName = $('#voice').val();
+                const pitch = $('#pitch').val() + "%";
+                const rate = $('#rate').val();
+
+                $('#preview-voice-button').html('Previewing... <div class="loading"></div>');
+                $.ajax({
+                    type: 'POST',
+                    url: 'http://localhost:5000/synthesize_response',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ text: text, voice_name: selectedVoiceName, pitch: pitch, rate: rate }),
+                    success: function(data) {
+                        const audioElement = new Audio('http://localhost:5000/audio/' + data.audio_file);
+                        audioElement.play().catch(error => {
+                            console.error('Failed to play audio:', error);
+                            alert('Failed to play audio. Please check the console for details.');
+                        });
+                        $('#preview-voice-button').html('Preview Voice');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Speech synthesis failed:', error);
+                        $('#preview-voice-button').html('Preview Voice');
+                        alert('Speech synthesis failed. Please try again.');
+                    }
+                });
+            });
+
+            // Extract Text from Image
+            $('#extract-text-button').click(function() {
+                const fileInput = $('#image-upload')[0];
+                if (!fileInput.files.length) {
+                    alert('Please select an image file.');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('image', fileInput.files[0]);
+
+                $('#extract-text-button').html('Extracting... <div class="loading"></div>');
+                $.ajax({
+                    type: 'POST',
+                    url: 'http://localhost:5000/extract_text',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(data) {
+                        $('#extracted-text').html(`<strong>Extracted Text:</strong><br>${data.extracted_text}`);
+                        $('#extract-text-button').html('Extract Text');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Failed to extract text from image:', error);
+                        $('#extract-text-button').html('Extract Text');
+                        alert('Failed to extract text from image. Please try again.');
+                    }
+                });
+            });
+
+            // Analyze Image
+            $('#analyze-image-button').click(function() {
+                const fileInput = $('#image-analysis-upload')[0];
+                if (!fileInput.files.length) {
+                    alert('Please select an image file.');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('image', fileInput.files[0]);
+
+                $('#analyze-image-button').html('Analyzing... <div class="loading"></div>');
+                $.ajax({
+                    type: 'POST',
+                    url: 'http://localhost:5000/analyze_image',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(data) {
+                        $('#analysis-result').html(`<strong>Analysis Results:</strong><br>${JSON.stringify(data.results, null, 2)}`);
+                        $('#analyze-image-button').html('Analyze Image');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Failed to analyze image:', error);
+                        $('#analyze-image-button').html('Analyze Image');
+                        alert('Failed to analyze image. Please try again.');
+                    }
+                });
+            });
+
+            // Moderate Image
+            $('#moderate-image-button').click(function() {
+                const fileInput = $('#image-moderation-upload')[0];
+                if (!fileInput.files.length) {
+                    alert('Please select an image file.');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('image', fileInput.files[0]);
+
+                $('#moderate-image-button').html('Moderating... <div class="loading"></div>');
+                $.ajax({
+                    type: 'POST',
+                    url: 'http://localhost:5000/moderate_image',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(data) {
+                        $('#moderation-result').html(`<strong>Moderation Results:</strong><br>${JSON.stringify(data.results, null, 2)}`);
+                        $('#moderate-image-button').html('Moderate Image');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Failed to moderate image:', error);
+                        $('#moderate-image-button').html('Moderate Image');
+                        alert('Failed to moderate image. Please try again.');
+                    }
+                });
+            });
+
+            // Detect Faces
+            $('#detect-faces-button').click(function() {
+                const fileInput = $('#face-detection-upload')[0];
+                if (!fileInput.files.length) {
+                    alert('Please select an image file.');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('image', fileInput.files[0]);
+
+                $('#detect-faces-button').html('Detecting... <div class="loading"></div>');
+                $.ajax({
+                    type: 'POST',
+                    url: 'http://localhost:5000/detect_faces',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(data) {
+                        $('#face-detection-result').html(`<strong>Face Detection Results:</strong><br>${JSON.stringify(data.results, null, 2)}`);
+                        $('#detect-faces-button').html('Detect Faces');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Failed to detect faces:', error);
+                        $('#detect-faces-button').html('Detect Faces');
+                        alert('Failed to detect faces. Please try again.');
+                    }
+                });
+            });
+
+            // Chat with Gemini
+            $('#send-chat-button').click(function() {
+                const message = $('#chat-input').val().trim();
+                if (!message) return;
+
+                $('#send-chat-button').html('Sending... <div class="loading"></div>');
+                $.ajax({
+                    type: 'POST',
+                    url: 'http://localhost:5000/chat',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ message: message }),
+                    success: function(data) {
+                        $('#chat-response').html(`<strong>Gemini:</strong> ${data.response}`);
+                        $('#send-chat-button').html('Send');
+                        $('#synthesize-response-button').show().off('click').click(function() {
+                            const selectedVoiceName = $('#voice').val();
+                            const pitch = $('#pitch').val() + "%";
+                            const rate = $('#rate').val();
+
+                            $('#synthesize-response-button').html('Synthesizing... <div class="loading"></div>');
+                            $.ajax({
+                                type: 'POST',
+                                url: 'http://localhost:5000/synthesize_response',
+                                contentType: 'application/json',
+                                data: JSON.stringify({ text: data.response, voice_name: selectedVoiceName, pitch: pitch, rate: rate }),
+                                success: function(synthData) {
+                                    const audioElement = new Audio('http://localhost:5000/audio/' + synthData.audio_file);
+                                    audioElement.play().catch(error => {
+                                        console.error('Failed to play audio:', error);
+                                        alert('Failed to play audio. Please check the console for details.');
+                                    });
+                                    $('#synthesize-response-button').html('Listen to Response');
+                                },
+                                error: function(xhr, status, error) {
+                                    console.error('Speech synthesis failed:', error);
+                                    $('#synthesize-response-button').html('Listen to Response');
+                                    alert('Speech synthesis failed. Please try again.');
+                                }
+                            });
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Failed to send chat message:', error);
+                        $('#send-chat-button').html('Send');
+                        alert('Failed to send chat message. Please try again.');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+
